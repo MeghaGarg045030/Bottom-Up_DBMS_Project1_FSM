@@ -7,7 +7,6 @@
 - Report_Hospital.pdf: Project Report in pdf format
 
 ### REFERENCES
-- Code Reference: codeacademy.com
-- Github: https://github.com/harnalashok 
+- Code Reference: codeacademy.com, https://github.com/harnalashok 
 - Google: https://www.flipkart.com/ 
 - Other References: chatgpt
