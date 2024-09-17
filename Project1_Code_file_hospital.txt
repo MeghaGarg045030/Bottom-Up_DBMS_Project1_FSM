@@ -1,0 +1,129 @@
+-- Create the database
+CREATE DATABASE HospitalDB;
+USE HospitalDB;
+
+-- Create the tables with NOT NULL constraints
+CREATE TABLE Patient (
+    PatientID CHAR(10) PRIMARY KEY NOT NULL,
+    PatientName VARCHAR(30) NOT NULL,
+    DOB DATE NOT NULL,
+    Gender ENUM('M','F','O') NOT NULL,
+    Address VARCHAR(60) NOT NULL,
+    ContactNumber VARCHAR(11) NOT NULL
+);
+
+CREATE TABLE Doctor (
+    DoctorID CHAR(10) PRIMARY KEY NOT NULL,
+    DoctorName VARCHAR(20) NOT NULL,
+    Specialty VARCHAR(25) NOT NULL,
+    ContactNumber VARCHAR(11) NOT NULL
+);
+
+CREATE TABLE Appointment (
+    AppointmentID CHAR(15) PRIMARY KEY NOT NULL,
+    PatientID CHAR(10) NOT NULL,
+    DoctorID CHAR(10) NOT NULL,
+    AppointmentDate DATE NOT NULL,
+    AppointmentTime TIME NOT NULL,
+    Reason VARCHAR(100) NOT NULL,
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+);
+
+CREATE TABLE Treatment (
+    TreatmentID CHAR(10) PRIMARY KEY NOT NULL,
+    TreatmentName VARCHAR(30) NOT NULL,
+    TreatmentCost DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE Prescription (
+    PrescriptionID CHAR(10) PRIMARY KEY NOT NULL,
+    PatientID CHAR(10) NOT NULL,
+    DoctorID CHAR(10) NOT NULL,
+    MedicineName VARCHAR(100) NOT NULL,
+    Dosage VARCHAR(20) NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+);
+
+CREATE TABLE PatientTreatment (
+    PatientID CHAR(10) NOT NULL,
+    TreatmentID CHAR(10) NOT NULL,
+    PRIMARY KEY (PatientID, TreatmentID),
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (TreatmentID) REFERENCES Treatment(TreatmentID)
+);
+
+-- Insert sample data points
+INSERT INTO Patient (PatientID, PatientName, DOB, Gender, Address, ContactNumber)
+VALUES 
+('P001', 'Rajesh Kumar', '1985-05-12', 'M', '123 MG Road, Delhi', '+91-9876543210'),
+('P002', 'Anita Singh', '1990-07-23', 'F', '456 Nehru Nagar, Mumbai', '+91-9876543211'),
+('P003', 'Meena Sharma', '1975-02-15', 'F', '789 Park Street, Kolkata', '+91-9876543212'),
+('P004', 'Vikram Patel', '2000-10-10', 'M', '321 Residency Road, Bangalore', '+91-9876543213');
+
+INSERT INTO Doctor (DoctorID, DoctorName, Specialty, ContactNumber)
+VALUES 
+('D001', 'Dr. Anil Mehta', 'Cardiology', '+91-9876543214'),
+('D002', 'Dr. Sunita Gupta', 'Neurology', '+91-9876543215'),
+('D003', 'Dr. Rajiv Kapoor', 'Orthopedics', '+91-9876543216'),
+('D004', 'Dr. Kavita Rao', 'Pediatrics', '+91-9876543217');
+
+INSERT INTO Appointment (AppointmentID, PatientID, DoctorID, AppointmentDate, AppointmentTime, Reason)
+VALUES 
+('RKAM001', 'P001', 'D001', '2024-08-01', '09:00', 'Routine Checkup'),
+('ASDG002', 'P002', 'D002', '2024-08-02', '10:30', 'Migraine Headache'),
+('MSRK003', 'P003', 'D003', '2024-08-03', '11:00', 'Back Pain'),
+('VPDR004', 'P004', 'D004', '2024-08-04', '13:00', 'Child Health Checkup');
+
+INSERT INTO Treatment (TreatmentID, TreatmentName, TreatmentCost)
+VALUES 
+('TREAT001', 'Surgery', 50000.00),
+('TREAT002', 'Physiotherapy', 2000.00),
+('TREAT003', 'Medication', 150.00),
+('TREAT004', 'X-Ray', 300.00);
+
+INSERT INTO Prescription (PrescriptionID, PatientID, DoctorID, MedicineName, Dosage, StartDate, EndDate)
+VALUES 
+('PREP001', 'P001', 'D001', 'Aspirin', '100mg', '2024-08-01', '2024-08-10'),
+('PREP002', 'P002', 'D002', 'Paracetamol', '500mg', '2024-08-02', '2024-08-12'),
+('PREP003', 'P003', 'D003', 'Ibuprofen', '200mg', '2024-08-03', '2024-08-15'),
+('PREP004', 'P004', 'D004', 'Amoxicillin', '250mg', '2024-08-04', '2024-08-20');
+
+INSERT INTO PatientTreatment (PatientID, TreatmentID)
+VALUES 
+('P001', 'TREAT001'),
+('P002', 'TREAT002'),
+('P003', 'TREAT003'),
+('P004', 'TREAT004');
+
+-- Data Access Language
+--USER CREATION AND GRANT PRIVILEGES
+
+-- Create a user for Patient Management
+CREATE USER 'patient_mgmt_user'@'localhost' IDENTIFIED BY 'patient_mgmt_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.Patient TO 'patient_mgmt_user'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Create a user for Doctor/Staff Management
+CREATE USER 'doctor_mgmt_user'@'localhost' IDENTIFIED BY 'doctor_mgmt_user_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.Doctor TO 'doctor_mgmt_user'@'localhost'; 
+FLUSH PRIVILEGES;
+
+-- Create a user for Appointments Department (Reception)
+CREATE USER 'appointments_user'@'localhost' IDENTIFIED BY 'appointments_user_password'; 
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.Appointment TO 'appointments_user'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Create a user for Treatment Management
+CREATE USER 'treatment_mgmt_user'@'localhost' IDENTIFIED BY 'treatment_mgmt_password'; 
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.Treatment TO 'treatment_mgmt_user'@'localhost'; 
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.PatientTreatment TO 'treatment_mgmt_user'@'localhost'; 
+FLUSH PRIVILEGES;
+
+-- Create a user for Pharmacy Department
+CREATE USER 'pharmacy_user'@'localhost' IDENTIFIED BY 'pharmacy_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON HospitalDB.Prescription TO 'pharmacy_user'@'localhost'; 
+FLUSH PRIVILEGES;
